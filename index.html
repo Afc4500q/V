@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>مفسر برمجي عربي</title>
+</head>
+<body>
+  <h2>اكتب كودك العربي:</h2>
+  <textarea id="input" rows="6" cols="60">عرف متغير س = 5;</textarea>
+  <br>
+  <button onclick="فسر()">فسر الكود</button>
+
+  <h3>الكود الناتج:</h3>
+  <pre id="output"></pre>
+
+  <script>
+    let القاموس = {};
+
+    // تحميل ملف JSON
+    fetch('arabic_programming_dictionary.json')
+      .then(response => response.json())
+      .then(data => {
+        القاموس = data.JavaScript; // نستخدم فقط قاموس JavaScript الآن
+      })
+      .catch(error => {
+        console.error("فشل تحميل القاموس:", error);
+      });
+
+    function فسر() {
+      const input = document.getElementById("input").value;
+      let الكود = input;
+
+      for (const [عربي, انجليزي] of Object.entries(القاموس)) {
+        const regex = new RegExp(عربي, 'g');
+        if (Array.isArray(انجليزي)) {
+          الكود = الكود.replace(regex, انجليزي[0]); // نستخدم أول صيغة (مثل let)
+        } else {
+          الكود = الكود.replace(regex, انجليزي);
+        }
+      }
+
+      document.getElementById("output").textContent = الكود;
+    }
+  </script>
+</body>
+</html>
