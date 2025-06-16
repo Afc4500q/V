@@ -11,29 +11,23 @@
       padding: 30px;
       background: #f9f9f9;
     }
-    input, button {
+    input, button, textarea {
       padding: 10px;
       font-size: 16px;
       margin-top: 10px;
+      width: 100%;
+      box-sizing: border-box;
     }
-    #result {
+    #resultContainer {
       margin-top: 20px;
-      font-weight: bold;
-      color: green;
     }
-    code {
+    textarea {
+      height: 100px;
       background: #eee;
-      padding: 10px;
+      border: 1px solid #ccc;
       border-radius: 5px;
-      display: block;
-      white-space: pre-wrap;
       direction: ltr;
-      font-size: 15px;
-    }
-    #copyBtn {
-      margin-top: 10px;
-      padding: 6px 10px;
-      font-size: 14px;
+      font-family: monospace;
     }
   </style>
 </head>
@@ -43,37 +37,36 @@
   <input type="text" id="arabicInput" placeholder="مثلاً: فقرة">
   <button onclick="getTag()">تحويل</button>
 
-  <div id="result"></div>
-  <button id="copyBtn" style="display:none;" onclick="copyCode()">📋 نسخ الكود</button>
+  <div id="resultContainer" style="display:none;">
+    <h3>الكود الناتج:</h3>
+    <textarea id="codeOutput" readonly></textarea>
+    <button onclick="copyCode()">📋 نسخ الكود</button>
+  </div>
 
   <script>
     let tags = {};
 
-    // تحميل ملف JSON
+    // تحميل ملف JSON من نفس المجلد
     fetch('main.json')
       .then(response => {
-        if (!response.ok) {
-          throw new Error("فشل تحميل main.json");
-        }
+        if (!response.ok) throw new Error("فشل تحميل main.json");
         return response.json();
       })
-      .then(data => {
-        tags = data;
-      })
+      .then(data => tags = data)
       .catch(error => {
-        document.getElementById("result").innerText = "⚠️ خطأ في تحميل ملف البيانات.";
+        alert("⚠️ خطأ في تحميل ملف البيانات.");
         console.error(error);
       });
 
     function getTag() {
       const key = document.getElementById("arabicInput").value.trim();
       const result = tags[key];
-      const output = document.getElementById("result");
-      const copyBtn = document.getElementById("copyBtn");
+      const resultBox = document.getElementById("resultContainer");
+      const codeOutput = document.getElementById("codeOutput");
 
       if (!result) {
-        output.innerHTML = "⚠️ لم يتم العثور على هذا الاسم في الملف.";
-        copyBtn.style.display = "none";
+        codeOutput.value = "⚠️ لم يتم العثور على هذا الاسم في الملف.";
+        resultBox.style.display = "block";
         return;
       }
 
@@ -89,17 +82,15 @@
         htmlCode = result;
       }
 
-      output.innerHTML = `الكود المقترح هو:<br><code id="codeBlock">${htmlCode}</code>`;
-      copyBtn.style.display = "inline-block";
+      codeOutput.value = htmlCode;
+      resultBox.style.display = "block";
     }
 
     function copyCode() {
-      const code = document.getElementById("codeBlock").innerText;
-      navigator.clipboard.writeText(code).then(() => {
-        alert("✅ تم نسخ الكود بنجاح!");
-      }).catch(() => {
-        alert("❌ فشل النسخ!");
-      });
+      const textarea = document.getElementById("codeOutput");
+      textarea.select();
+      document.execCommand("copy");
+      alert("✅ تم نسخ الكود!");
     }
   </script>
 
