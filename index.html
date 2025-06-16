@@ -28,13 +28,20 @@
       border-radius: 5px;
       direction: ltr;
       font-family: monospace;
+      resize: vertical;
+    }
+    #arabicInput {
+      height: 100px;
+      direction: rtl !important;
+      text-align: right;
+      resize: vertical;
     }
   </style>
 </head>
 <body>
 
-  <h2>أدخل وصف العنصر باللغة العربية:</h2>
-  <input type="text" id="arabicInput" placeholder="مثلاً: فقرة عام green (نص تجريبي)">
+  <h2>أدخل وصف العنصر باللغة العربية (سطر أو أكثر):</h2>
+  <textarea id="arabicInput" placeholder="مثلاً: فقرة عام green (نص تجريبي)&#10;صورة رابط[img/logo.png]"></textarea>
   <button onclick="getTag()">تحويل</button>
 
   <div id="resultContainer" style="display:none;">
@@ -45,6 +52,8 @@
 
   <script>
     let tags = {};
+    const srcTags = ['img', 'source', 'track', 'video', 'audio', 'iframe', 'embed', 'script', 'object'];
+    const hrefTags = ['a', 'link'];
 
     fetch('main.json')
       .then(response => {
@@ -58,60 +67,67 @@
       });
 
     function getTag() {
-      const input = document.getElementById("arabicInput").value.trim();
+      const lines = document.getElementById("arabicInput").value.trim().split(/\n+/);
       const output = document.getElementById("codeOutput");
       const container = document.getElementById("resultContainer");
+      let finalCode = "";
 
-      let htmlCode = "";
-      const contentMatch = input.match(/\((.*?)\)/);
-      const content = contentMatch ? contentMatch[1] : "";
+      for (let line of lines) {
+        let htmlCode = "";
+        const contentMatch = line.match(/\((.*?)\)/);
+        const content = contentMatch ? contentMatch[1] : "";
 
-      const linkMatch = input.match(/رابط\[(.*?)\]/);
-      const link = linkMatch ? linkMatch[1] : "";
+        const linkMatch = line.match(/رابط\[(.*?)\]/);
+        const link = linkMatch ? linkMatch[1] : "";
 
-      const isClass = input.includes("عام");
-      const isId = input.includes("خاص");
-      const identifierMatch = input.match(/عام\s+(\w+)|خاص\s+(\w+)/);
-      const identifier = identifierMatch ? (identifierMatch[1] || identifierMatch[2]) : null;
+        const isClass = line.includes("عام");
+        const isId = line.includes("خاص");
+        const identifierMatch = line.match(/عام\s+(\w+)|خاص\s+(\w+)/);
+        const identifier = identifierMatch ? (identifierMatch[1] || identifierMatch[2]) : null;
 
-      const cleanInput = input
-        .replace(/عام\s+\w+/, "")
-        .replace(/خاص\s+\w+/, "")
-        .replace(/\(.*?\)/, "")
-        .replace(/رابط\[.*?\]/, "")
-        .trim();
+        const cleanInput = line
+          .replace(/عام\s+\w+/, "")
+          .replace(/خاص\s+\w+/, "")
+          .replace(/\(.*?\)/, "")
+          .replace(/رابط\[.*?\]/, "")
+          .trim();
 
-      const tagDef = tags[cleanInput];
-      if (!tagDef) {
-        output.value = "⚠️ لم يتم العثور على هذا العنصر.";
-        container.style.display = "block";
-        return;
+        const tagDef = tags[cleanInput];
+        if (!tagDef) {
+          finalCode += `<!-- ⚠️ العنصر '${cleanInput}' غير معروف -->\n`;
+          continue;
+        }
+
+        if (!tagDef.includes("</")) {
+          const tagName = tagDef.match(/<(\w+)/)[1];
+          let attr = "";
+          if (isClass && identifier) attr = ` class="${identifier}"`;
+          if (isId && identifier) attr = ` id="${identifier}"`;
+          if (srcTags.includes(tagName) && link) {
+            attr += ` src="${link}"`;
+          } else if (hrefTags.includes(tagName) && link) {
+            attr += ` href="${link}"`;
+          }
+          htmlCode = `<${tagName}${attr}>`;
+        } else {
+          const tagName = tagDef.match(/<(\w+)/)[1];
+          let attr = "";
+          if (isClass && identifier) attr = ` class="${identifier}"`;
+          if (isId && identifier) attr = ` id="${identifier}"`;
+
+          if (hrefTags.includes(tagName) && link) {
+            htmlCode = `<${tagName}${attr} href="${link}">${content || "الرابط"}</${tagName}>`;
+          } else if (srcTags.includes(tagName) && link) {
+            htmlCode = `<${tagName}${attr} controls>\n  <source src="${link}">\n</${tagName}>`;
+          } else {
+            htmlCode = `<${tagName}${attr}>${content}</${tagName}>`;
+          }
+        }
+
+        finalCode += htmlCode + "\n";
       }
 
-      // عناصر لا تحتوي على نهاية (مثل <img>)
-      if (!tagDef.includes("</")) {
-        if (tagDef.includes("img") || tagDef.includes("source") || tagDef.includes("track")) {
-          htmlCode = link ? `<${tagDef.slice(1, -1)} src="${link}">` : tagDef;
-        } else {
-          htmlCode = tagDef;
-        }
-      } else {
-        const tagName = tagDef.match(/<(\w+)/)[1];
-        let attr = "";
-
-        if (isClass && identifier) attr = ` class="${identifier}"`;
-        if (isId && identifier) attr = ` id="${identifier}"`;
-
-        if (tagName === "a" && link) {
-          htmlCode = `<a href="${link}"${attr}>${content || "الرابط"}</a>`;
-        } else if (["audio", "video"].includes(tagName) && link) {
-          htmlCode = `<${tagName}${attr} controls>\n  <source src="${link}">\n</${tagName}>`;
-        } else {
-          htmlCode = `<${tagName}${attr}>${content}</${tagName}>`;
-        }
-      }
-
-      output.value = htmlCode;
+      output.value = finalCode.trim();
       container.style.display = "block";
     }
 
