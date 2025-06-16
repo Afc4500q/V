@@ -1,72 +1,426 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>محول العناصر إلى وسوم HTML</title>
-  <style>
-    body {
-      font-family: Arial;
-      direction: rtl;
-      text-align: right;
-      padding: 30px;
-      background: #f9f9f9;
-    }
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-      margin-top: 10px;
-    }
-    #result {
-      margin-top: 20px;
-      font-weight: bold;
-      color: green;
-    }
-    code {
-      background: #eee;
-      padding: 5px;
-      border-radius: 5px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أداة استخراج قيم JSON</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            margin: 30px 0;
+        }
+        
+        header {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 25px;
+            text-align: center;
+            border-bottom: 2px solid #fdbb2d;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #fdbb2d;
+            text-shadow: 0 0 10px rgba(253, 187, 45, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        main {
+            padding: 25px;
+        }
+        
+        .input-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: #fdbb2d;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title i {
+            margin-left: 10px;
+        }
+        
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .upload-btn {
+            background: #1a2a6c;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .upload-btn:hover {
+            background: #2a3a9c;
+            transform: translateY(-2px);
+        }
+        
+        .file-name {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            min-height: 20px;
+        }
+        
+        .key-input {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        input {
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        input:focus {
+            outline: 2px solid #fdbb2d;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .btn {
+            background: #fdbb2d;
+            color: #000;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            background: #ffcc44;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(253, 187, 45, 0.4);
+        }
+        
+        .result-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .result-box {
+            min-height: 150px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        
+        .example {
+            background: rgba(26, 42, 108, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.95rem;
+        }
+        
+        .example-title {
+            color: #fdbb2d;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .example-code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 8px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .hint {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(253, 187, 45, 0.1);
+            border-left: 4px solid #fdbb2d;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .json-view {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                width: 95%;
+            }
+        }
+    </style>
 </head>
 <body>
-
-  <h2>أدخل اسم العنصر باللغة العربية:</h2>
-  <input type="text" id="arabicInput" placeholder="مثلاً: فقرة">
-  <button onclick="getTag()">تحويل</button>
-
-  <div id="result"></div>
-
-  <script>
-    let tags = {};
-
-    // تحميل ملف JSON من نفس المجلد
-    fetch('main.json')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error("فشل تحميل main.json");
-        }
-        return response.json();
-      })
-      .then(data => {
-        tags = data;
-      })
-      .catch(error => {
-        document.getElementById("result").innerText = "⚠️ خطأ في تحميل ملف البيانات.";
-        console.error(error);
-      });
-
-    function getTag() {
-      const key = document.getElementById("arabicInput").value.trim();
-      const result = tags[key];
-      const output = document.getElementById("result");
-
-      if (result) {
-        output.innerHTML = `الوسم هو: <code>${result}</code>`;
-      } else {
-        output.innerHTML = "⚠️ لم يتم العثور على هذا الاسم في الملف.";
-      }
+    <div class="container">
+        <header>
+            <h1>أداة استخراج قيم JSON</h1>
+            <p class="subtitle">قم بتحميل ملف JSON الخاص بك واستخراج القيم باستخدام المفاتيح</p>
+        </header>
+        
+        <main>
+            <div class="input-section">
+                <h2 class="section-title">تحميل ملف JSON</h2>
+                <div class="file-upload">
+                    <button class="upload-btn" id="uploadBtn">
+                        اختر ملف JSON (main.json)
+                    </button>
+                    <input type="file" id="fileInput" accept=".json" class="hidden">
+                    <div class="file-name" id="fileName">لم يتم اختيار ملف بعد</div>
+                </div>
+                
+                <h2 class="section-title">أدخل المفتاح</h2>
+                <div class="key-input">
+                    <input type="text" id="keyInput" placeholder="مثال: user.address.city أو products.0.name">
+                    <button class="btn" id="getValueBtn">استخراج القيمة</button>
+                </div>
+                
+                <div class="hint">
+                    <strong>ملاحظة:</strong> يمكنك استخدام النقاط للوصول إلى القيم المتداخلة، واستخدام الأرقام للوصول إلى عناصر المصفوفات (مثال: items.0.name)
+                </div>
+            </div>
+            
+            <div class="result-section">
+                <h2 class="section-title">النتيجة</h2>
+                <div class="result-box" id="result">
+                    ستظهر النتيجة هنا بعد إدخال المفتاح
+                </div>
+                
+                <div class="example">
+                    <div class="example-title">مثال على ملف JSON:</div>
+                    <pre class="example-code">{
+  "name": "أحمد",
+  "age": 30,
+  "address": {
+    "city": "الرياض",
+    "zip": "11543"
+  },
+  "hobbies": ["القراءة", "السباحة", "السفر"],
+  "education": [
+    {
+      "degree": "بكالوريوس",
+      "major": "علوم الحاسوب",
+      "year": 2015
+    },
+    {
+      "degree": "ماجستير",
+      "major": "الذكاء الاصطناعي",
+      "year": 2018
     }
-  </script>
+  ]
+}</pre>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>أداة استخراج قيم JSON - يمكنك استخدام المفاتيح المتداخلة للوصول إلى القيم المطلوبة</p>
+        </footer>
+    </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // عناصر DOM
+            const fileInput = document.getElementById('fileInput');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const fileName = document.getElementById('fileName');
+            const keyInput = document.getElementById('keyInput');
+            const getValueBtn = document.getElementById('getValueBtn');
+            const resultDiv = document.getElementById('result');
+            
+            let jsonData = null;
+            
+            // التعامل مع زر التحميل
+            uploadBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // عند اختيار ملف
+            fileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    fileName.textContent = file.name;
+                    
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            jsonData = JSON.parse(e.target.result);
+                            resultDiv.textContent = 'تم تحميل ملف JSON بنجاح! يمكنك الآن إدخال المفتاح لاستخراج القيمة.';
+                        } catch (error) {
+                            resultDiv.textContent = `خطأ في تحليل ملف JSON: ${error.message}`;
+                            jsonData = null;
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            });
+            
+            // استخراج القيمة عند الضغط على الزر
+            getValueBtn.addEventListener('click', () => {
+                if (!jsonData) {
+                    resultDiv.textContent = 'الرجاء تحميل ملف JSON أولاً';
+                    return;
+                }
+                
+                const key = keyInput.value.trim();
+                if (!key) {
+                    resultDiv.textContent = 'الرجاء إدخال مفتاح للبحث';
+                    return;
+                }
+                
+                try {
+                    const value = getValue(jsonData, key);
+                    if (value === undefined) {
+                        resultDiv.textContent = `لم يتم العثور على قيمة للمفتاح: "${key}"`;
+                    } else {
+                        // عرض القيمة بشكل مناسب
+                        if (typeof value === 'object' && value !== null) {
+                            resultDiv.textContent = JSON.stringify(value, null, 2);
+                        } else {
+                            resultDiv.textContent = value;
+                        }
+                    }
+                } catch (error) {
+                    resultDiv.textContent = `حدث خطأ: ${error.message}`;
+                }
+            });
+            
+            // دالة استخراج القيمة باستخدام المفتاح
+            function getValue(obj, keyPath) {
+                const keys = keyPath.split('.');
+                let current = obj;
+                
+                for (const key of keys) {
+                    if (current === null || typeof current !== 'object') {
+                        return undefined;
+                    }
+                    
+                    // التحقق مما إذا كان المفتاح رقمًا (للمصفوفات)
+                    if (!isNaN(key) && Array.isArray(current)) {
+                        const index = parseInt(key, 10);
+                        if (index < 0 || index >= current.length) {
+                            return undefined;
+                        }
+                        current = current[index];
+                    } else {
+                        if (!(key in current)) {
+                            return undefined;
+                        }
+                        current = current[key];
+                    }
+                }
+                
+                return current;
+            }
+            
+            // مثال تلقائي عند التحميل
+            setTimeout(() => {
+                const exampleJson = {
+                    name: "أحمد",
+                    age: 30,
+                    address: {
+                        city: "الرياض",
+                        zip: "11543"
+                    },
+                    hobbies: ["القراءة", "السباحة", "السفر"],
+                    education: [
+                        {
+                            degree: "بكالوريوس",
+                            major: "علوم الحاسوب",
+                            year: 2015
+                        },
+                        {
+                            degree: "ماجستير",
+                            major: "الذكاء الاصطناعي",
+                            year: 2018
+                        }
+                    ]
+                };
+                
+                jsonData = exampleJson;
+                fileName.textContent = "main.json (مثال)";
+                resultDiv.textContent = 'تم تحميل ملف JSON تجريبي. جرب إدخال "name" أو "address.city" أو "education.0.degree"';
+            }, 2000);
+        });
+    </script>
 </body>
 </html>
