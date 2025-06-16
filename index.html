@@ -1,454 +1,107 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أداة استخراج قيم JSON</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-            color: #fff;
-            min-height: 100vh;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .container {
-            width: 90%;
-            max-width: 900px;
-            background: rgba(0, 0, 0, 0.85);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            overflow: hidden;
-            margin: 30px 0;
-        }
-        
-        header {
-            background: rgba(0, 0, 0, 0.7);
-            padding: 25px;
-            text-align: center;
-            border-bottom: 2px solid #fdbb2d;
-            position: relative;
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            color: #fdbb2d;
-            text-shadow: 0 0 10px rgba(253, 187, 45, 0.5);
-        }
-        
-        .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            margin-bottom: 10px;
-            line-height: 1.6;
-        }
-        
-        .json-path {
-            background: rgba(253, 187, 45, 0.1);
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-            display: inline-block;
-            font-family: monospace;
-            font-size: 1rem;
-            word-break: break-all;
-        }
-        
-        main {
-            padding: 25px;
-        }
-        
-        .input-section {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-        }
-        
-        .section-title {
-            font-size: 1.4rem;
-            margin-bottom: 20px;
-            color: #fdbb2d;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .section-title i {
-            font-size: 1.2em;
-        }
-        
-        .key-input {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        label {
-            font-weight: bold;
-            color: #fdbb2d;
-            font-size: 1.1rem;
-        }
-        
-        input {
-            padding: 14px 18px;
-            border-radius: 10px;
-            border: none;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 1.1rem;
-            transition: all 0.3s;
-        }
-        
-        input:focus {
-            outline: 2px solid #fdbb2d;
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 0 10px rgba(253, 187, 45, 0.3);
-        }
-        
-        .btn {
-            background: #fdbb2d;
-            color: #000;
-            border: none;
-            padding: 16px 25px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 1.2rem;
-            font-weight: bold;
-            transition: all 0.3s;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .btn:hover {
-            background: #ffcc44;
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(253, 187, 45, 0.4);
-        }
-        
-        .btn:active {
-            transform: translateY(1px);
-        }
-        
-        .btn i {
-            font-size: 1.2em;
-        }
-        
-        .result-section {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-        }
-        
-        .result-box {
-            min-height: 180px;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 10px;
-            padding: 25px;
-            margin-top: 15px;
-            font-family: monospace;
-            white-space: pre-wrap;
-            overflow-x: auto;
-            font-size: 1.1rem;
-            line-height: 1.6;
-        }
-        
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            padding: 20px;
-        }
-        
-        .loading-spinner {
-            width: 30px;
-            height: 30px;
-            border: 4px solid rgba(253, 187, 45, 0.3);
-            border-top: 4px solid #fdbb2d;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .examples {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-        
-        .example-card {
-            background: rgba(26, 42, 108, 0.5);
-            padding: 20px;
-            border-radius: 10px;
-            transition: transform 0.3s;
-        }
-        
-        .example-card:hover {
-            transform: translateY(-5px);
-            background: rgba(26, 42, 108, 0.7);
-        }
-        
-        .example-title {
-            color: #fdbb2d;
-            margin-bottom: 15px;
-            font-weight: bold;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .example-content {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 1rem;
-            line-height: 1.5;
-        }
-        
-        .example-result {
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(253, 187, 45, 0.1);
-            border-radius: 5px;
-            font-family: monospace;
-        }
-        
-        footer {
-            text-align: center;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            font-size: 0.9rem;
-            color: #aaa;
-            border-top: 1px solid rgba(253, 187, 45, 0.3);
-        }
-        
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .container {
-                width: 95%;
-            }
-            
-            .examples {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>محول العناصر إلى وسوم HTML</title>
+  <style>
+    body {
+      font-family: Arial;
+      direction: rtl;
+      text-align: right;
+      padding: 30px;
+      background: #f9f9f9;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+      color: green;
+    }
+    code {
+      background: #eee;
+      padding: 10px;
+      border-radius: 5px;
+      display: block;
+      white-space: pre-wrap;
+      direction: ltr;
+      font-size: 15px;
+    }
+    #copyBtn {
+      margin-top: 10px;
+      padding: 6px 10px;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-code"></i> أداة استخراج قيم JSON</h1>
-            <p class="subtitle">هذه الأداة تقوم بجلب ملف JSON من رابط ثابت واستخراج القيم باستخدام المفتاح الذي تحدده</p>
-            <div class="json-path">
-                <i class="fas fa-link"></i> يتم جلب البيانات من: <span id="jsonSource">main.json</span>
-            </div>
-        </header>
-        
-        <main>
-            <div class="input-section">
-                <h2 class="section-title"><i class="fas fa-keyboard"></i> أدخل المفتاح</h2>
-                <div class="key-input">
-                    <div class="input-group">
-                        <label for="keyInput"><i class="fas fa-key"></i> مسار المفتاح (Key Path)</label>
-                        <input type="text" id="keyInput" placeholder="مثال: user.name أو products.0.price">
-                    </div>
-                    <button class="btn" id="getValueBtn">
-                        <i class="fas fa-search"></i> استخراج القيمة
-                    </button>
-                </div>
-                
-                <div class="examples">
-                    <div class="example-card">
-                        <div class="example-title"><i class="fas fa-lightbulb"></i> مثال 1: مفاتيح متداخلة</div>
-                        <div class="example-content">user.address.city</div>
-                        <div class="example-result">النتيجة: "الرياض"</div>
-                    </div>
-                    
-                    <div class="example-card">
-                        <div class="example-title"><i class="fas fa-lightbulb"></i> مثال 2: مصفوفات</div>
-                        <div class="example-content">products.2.name</div>
-                        <div class="example-result">النتيجة: "هاتف ذكي"</div>
-                    </div>
-                    
-                    <div class="example-card">
-                        <div class="example-title"><i class="fas fa-lightbulb"></i> مثال 3: قيم مباشرة</div>
-                        <div class="example-content">website</div>
-                        <div class="example-result">النتيجة: "example.com"</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="result-section">
-                <h2 class="section-title"><i class="fas fa-result"></i> النتيجة</h2>
-                <div class="result-box" id="result">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        <span>جارٍ جلب بيانات JSON من الملف...</span>
-                    </div>
-                </div>
-            </div>
-        </main>
-        
-        <footer>
-            <p>أداة استخراج قيم JSON - يتم جلب البيانات تلقائيًا من ملف main.json</p>
-        </footer>
-    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            // عناصر DOM
-            const keyInput = document.getElementById('keyInput');
-            const getValueBtn = document.getElementById('getValueBtn');
-            const resultDiv = document.getElementById('result');
-            
-            // ملف JSON الثابت
-            const jsonUrl = 'main.json';
-            let jsonData = null;
-            
-            // جلب ملف JSON
-            async function loadJsonData() {
-                try {
-                    resultDiv.innerHTML = `<div class="loading">
-                        <div class="loading-spinner"></div>
-                        <span>جارٍ جلب بيانات JSON من الملف...</span>
-                    </div>`;
-                    
-                    const response = await fetch(jsonUrl);
-                    
-                    if (!response.ok) {
-                        throw new Error(`خطأ في جلب الملف: ${response.status} ${response.statusText}`);
-                    }
-                    
-                    jsonData = await response.json();
-                    
-                    resultDiv.innerHTML = 'تم تحميل ملف JSON بنجاح!<br>يمكنك الآن إدخال المفتاح لاستخراج القيمة.<br><br>مثال: <code>user.name</code> أو <code>products.0.price</code>';
-                } catch (error) {
-                    resultDiv.innerHTML = `<div style="color: #ff6b6b;">
-                        <i class="fas fa-exclamation-triangle"></i> حدث خطأ: ${error.message}
-                        <br><br>تأكد من أن ملف <code>main.json</code> موجود في نفس المسار
-                    </div>`;
-                    console.error('Error loading JSON:', error);
-                }
-            }
-            
-            // استخراج القيمة من JSON باستخدام المفتاح
-            function getValue(obj, keyPath) {
-                const keys = keyPath.split('.');
-                let current = obj;
-                
-                for (const key of keys) {
-                    if (current === null || typeof current !== 'object') {
-                        return undefined;
-                    }
-                    
-                    // التحقق مما إذا كان المفتاح رقمًا (للمصفوفات)
-                    if (!isNaN(key) && Array.isArray(current)) {
-                        const index = parseInt(key, 10);
-                        if (index < 0 || index >= current.length) {
-                            return undefined;
-                        }
-                        current = current[index];
-                    } else {
-                        if (!(key in current)) {
-                            return undefined;
-                        }
-                        current = current[key];
-                    }
-                }
-                
-                return current;
-            }
-            
-            // استخراج القيمة عند الضغط على الزر
-            getValueBtn.addEventListener('click', () => {
-                if (!jsonData) {
-                    resultDiv.textContent = 'البيانات لم تُحمّل بعد، الرجاء الانتظار...';
-                    return;
-                }
-                
-                const key = keyInput.value.trim();
-                if (!key) {
-                    resultDiv.innerHTML = '<div style="color: #ff6b6b;"><i class="fas fa-exclamation-circle"></i> الرجاء إدخال مفتاح للبحث</div>';
-                    return;
-                }
-                
-                try {
-                    const value = getValue(jsonData, key);
-                    if (value === undefined) {
-                        resultDiv.innerHTML = `<div style="color: #ff6b6b;">
-                            <i class="fas fa-search-minus"></i> لم يتم العثور على قيمة للمفتاح: "${key}"
-                        </div>`;
-                    } else {
-                        // عرض القيمة بشكل مناسب
-                        if (typeof value === 'object' && value !== null) {
-                            resultDiv.innerHTML = `<div style="color: #4ecdc4;">
-                                <i class="fas fa-object-group"></i> تم العثور على كائن:<br>
-                                <pre>${JSON.stringify(value, null, 2)}</pre>
-                            </div>`;
-                        } else {
-                            resultDiv.innerHTML = `<div style="color: #4ecdc4;">
-                                <i class="fas fa-check-circle"></i> تم العثور على القيمة:<br>
-                                <div style="font-size: 1.5rem; margin-top: 15px; padding: 10px; background: rgba(78, 205, 196, 0.1); border-radius: 8px;">
-                                    ${value}
-                                </div>
-                            </div>`;
-                        }
-                    }
-                } catch (error) {
-                    resultDiv.innerHTML = `<div style="color: #ff6b6b;">
-                        <i class="fas fa-bug"></i> حدث خطأ: ${error.message}
-                    </div>`;
-                }
-            });
-            
-            // تحميل البيانات عند بدء التشغيل
-            await loadJsonData();
-            
-            // إضافة أمثلة تفاعلية
-            const examples = document.querySelectorAll('.example-card');
-            examples.forEach(card => {
-                card.addEventListener('click', () => {
-                    const exampleContent = card.querySelector('.example-content').textContent;
-                    keyInput.value = exampleContent;
-                    getValueBtn.click();
-                });
-            });
-        });
-    </script>
+  <h2>أدخل اسم العنصر باللغة العربية:</h2>
+  <input type="text" id="arabicInput" placeholder="مثلاً: فقرة">
+  <button onclick="getTag()">تحويل</button>
+
+  <div id="result"></div>
+  <button id="copyBtn" style="display:none;" onclick="copyCode()">📋 نسخ الكود</button>
+
+  <script>
+    let tags = {};
+
+    // تحميل ملف JSON
+    fetch('main.json')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("فشل تحميل main.json");
+        }
+        return response.json();
+      })
+      .then(data => {
+        tags = data;
+      })
+      .catch(error => {
+        document.getElementById("result").innerText = "⚠️ خطأ في تحميل ملف البيانات.";
+        console.error(error);
+      });
+
+    function getTag() {
+      const key = document.getElementById("arabicInput").value.trim();
+      const result = tags[key];
+      const output = document.getElementById("result");
+      const copyBtn = document.getElementById("copyBtn");
+
+      if (!result) {
+        output.innerHTML = "⚠️ لم يتم العثور على هذا الاسم في الملف.";
+        copyBtn.style.display = "none";
+        return;
+      }
+
+      let htmlCode = "";
+
+      if (result.includes("</")) {
+        // عناصر بوسم بداية ونهاية
+        const openTag = result.split(">")[1].replace("<", "<");
+        const closeTag = result.split(">")[0] + ">";
+        htmlCode = `${openTag}محتواك هنا${closeTag}`;
+      } else {
+        // عناصر بدون وسم نهاية
+        htmlCode = result;
+      }
+
+      output.innerHTML = `الكود المقترح هو:<br><code id="codeBlock">${htmlCode}</code>`;
+      copyBtn.style.display = "inline-block";
+    }
+
+    function copyCode() {
+      const code = document.getElementById("codeBlock").innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        alert("✅ تم نسخ الكود بنجاح!");
+      }).catch(() => {
+        alert("❌ فشل النسخ!");
+      });
+    }
+  </script>
+
 </body>
 </html>
