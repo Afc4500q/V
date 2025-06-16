@@ -8,7 +8,8 @@
       font-family: Arial;
       direction: rtl;
       text-align: right;
-      padding: 20px;
+      padding: 30px;
+      background: #f9f9f9;
     }
     input, button {
       padding: 10px;
@@ -20,11 +21,16 @@
       font-weight: bold;
       color: green;
     }
+    code {
+      background: #eee;
+      padding: 5px;
+      border-radius: 5px;
+    }
   </style>
 </head>
 <body>
 
-  <h2>ادخل اسم العنصر باللغة العربية:</h2>
+  <h2>أدخل اسم العنصر باللغة العربية:</h2>
   <input type="text" id="arabicInput" placeholder="مثلاً: فقرة">
   <button onclick="getTag()">تحويل</button>
 
@@ -33,11 +39,11 @@
   <script>
     let tags = {};
 
-    // تحميل ملف JSON عند فتح الصفحة
+    // تحميل ملف JSON من نفس المجلد
     fetch('main.json')
       .then(response => {
         if (!response.ok) {
-          throw new Error('فشل تحميل ملف main.json');
+          throw new Error("فشل تحميل main.json");
         }
         return response.json();
       })
@@ -45,20 +51,19 @@
         tags = data;
       })
       .catch(error => {
-        console.error('خطأ في تحميل JSON:', error);
-        document.getElementById("result").innerText = "⚠️ تعذر تحميل البيانات.";
+        document.getElementById("result").innerText = "⚠️ خطأ في تحميل ملف البيانات.";
+        console.error(error);
       });
 
-    // دالة البحث والعرض
     function getTag() {
-      const input = document.getElementById("arabicInput").value.trim();
-      const tag = tags[input];
-      const resultDiv = document.getElementById("result");
+      const key = document.getElementById("arabicInput").value.trim();
+      const result = tags[key];
+      const output = document.getElementById("result");
 
-      if (tag) {
-        resultDiv.innerHTML = `الوسم هو: <code>${tag}</code>`;
+      if (result) {
+        output.innerHTML = `الوسم هو: <code>${result}</code>`;
       } else {
-        resultDiv.innerHTML = "⚠️ لم يتم العثور على هذا الاسم في القائمة.";
+        output.innerHTML = "⚠️ لم يتم العثور على هذا الاسم في الملف.";
       }
     }
   </script>
