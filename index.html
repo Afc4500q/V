@@ -33,8 +33,8 @@
 </head>
 <body>
 
-  <h2>أدخل وصف العنصر أو اسمه باللغة العربية:</h2>
-  <input type="text" id="arabicInput" placeholder="مثلاً: حاوية عام Iraq (العراق)">
+  <h2>أدخل وصف العنصر باللغة العربية:</h2>
+  <input type="text" id="arabicInput" placeholder="مثلاً: فقرة عام green (نص تجريبي)">
   <button onclick="getTag()">تحويل</button>
 
   <div id="resultContainer" style="display:none;">
@@ -63,51 +63,51 @@
       const container = document.getElementById("resultContainer");
 
       let htmlCode = "";
-
-      // استخلاص رابط إن وجد
-      const linkMatch = input.match(/رابط\[(.*?)\]/);
-      const link = linkMatch ? linkMatch[1] : null;
-
-      // استخلاص النص داخل القوسين
       const contentMatch = input.match(/\((.*?)\)/);
-      const content = contentMatch ? contentMatch[1] : "محتواك هنا";
+      const content = contentMatch ? contentMatch[1] : "";
 
-      // تحقق من وجود class أو id
+      const linkMatch = input.match(/رابط\[(.*?)\]/);
+      const link = linkMatch ? linkMatch[1] : "";
+
       const isClass = input.includes("عام");
       const isId = input.includes("خاص");
       const identifierMatch = input.match(/عام\s+(\w+)|خاص\s+(\w+)/);
       const identifier = identifierMatch ? (identifierMatch[1] || identifierMatch[2]) : null;
 
-      // معرفة نوع العنصر (حاوية، صورة، رابط... الخ)
-      if (input.includes("حاوية")) {
-        if (isClass && identifier) {
-          htmlCode = `<div class="${identifier}">${content}</div>`;
-        } else if (isId && identifier) {
-          htmlCode = `<div id="${identifier}">${content}</div>`;
+      const cleanInput = input
+        .replace(/عام\s+\w+/, "")
+        .replace(/خاص\s+\w+/, "")
+        .replace(/\(.*?\)/, "")
+        .replace(/رابط\[.*?\]/, "")
+        .trim();
+
+      const tagDef = tags[cleanInput];
+      if (!tagDef) {
+        output.value = "⚠️ لم يتم العثور على هذا العنصر.";
+        container.style.display = "block";
+        return;
+      }
+
+      // عناصر لا تحتوي على نهاية (مثل <img>)
+      if (!tagDef.includes("</")) {
+        if (tagDef.includes("img") || tagDef.includes("source") || tagDef.includes("track")) {
+          htmlCode = link ? `<${tagDef.slice(1, -1)} src="${link}">` : tagDef;
         } else {
-          htmlCode = `<div>${content}</div>`;
+          htmlCode = tagDef;
         }
-
-      } else if (input.includes("صورة")) {
-        htmlCode = link ? `<img src="${link}">` : `<img src="image.jpg">`;
-
-      } else if (input.includes("رابط")) {
-        const href = link || "#";
-        htmlCode = `<a href="${href}">${content}</a>`;
-
       } else {
-        // إذا كان مجرد اسم عنصر من JSON
-        const tag = tags[input];
-        if (tag) {
-          if (tag.includes("</")) {
-            const openTag = tag.split(">")[1].replace("<", "<");
-            const closeTag = tag.split(">")[0] + ">";
-            htmlCode = `${openTag}${content}${closeTag}`;
-          } else {
-            htmlCode = tag;
-          }
+        const tagName = tagDef.match(/<(\w+)/)[1];
+        let attr = "";
+
+        if (isClass && identifier) attr = ` class="${identifier}"`;
+        if (isId && identifier) attr = ` id="${identifier}"`;
+
+        if (tagName === "a" && link) {
+          htmlCode = `<a href="${link}"${attr}>${content || "الرابط"}</a>`;
+        } else if (["audio", "video"].includes(tagName) && link) {
+          htmlCode = `<${tagName}${attr} controls>\n  <source src="${link}">\n</${tagName}>`;
         } else {
-          htmlCode = "⚠️ لم يتم العثور على هذا العنصر.";
+          htmlCode = `<${tagName}${attr}>${content}</${tagName}>`;
         }
       }
 
