@@ -2,54 +2,66 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>مفسر برمجي عربي شامل</title>
+  <title>محول العناصر إلى وسوم HTML</title>
+  <style>
+    body {
+      font-family: Arial;
+      direction: rtl;
+      text-align: right;
+      padding: 20px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+      color: green;
+    }
+  </style>
 </head>
 <body>
-  <h2>اكتب كودك العربي:</h2>
-  <textarea id="input" rows="6" cols="60">فقرة: هذا نص تجريبي.</textarea>
-  <br>
-  <label>اختر نوع الكود:</label>
-  <select id="language">
-    <option value="JavaScript">JavaScript</option>
-    <option value="HTML">HTML</option>
-    <option value="CSS">CSS</option>
-  </select>
-  <br><br>
-  <button onclick="فسر()">فسر الكود</button>
 
-  <h3>الكود الناتج:</h3>
-  <pre id="output"></pre>
+  <h2>ادخل اسم العنصر باللغة العربية:</h2>
+  <input type="text" id="arabicInput" placeholder="مثلاً: فقرة">
+  <button onclick="getTag()">تحويل</button>
+
+  <div id="result"></div>
 
   <script>
-    let القاموس = {};
+    let tags = {};
 
-    // تحميل ملف JSON
-    fetch('arabic_programming_dictionary.json')
-      .then(response => response.json())
+    // تحميل ملف JSON عند فتح الصفحة
+    fetch('main.json')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('فشل تحميل ملف main.json');
+        }
+        return response.json();
+      })
       .then(data => {
-        القاموس = data; // نحمل كل الأقسام: JS, HTML, CSS
+        tags = data;
       })
       .catch(error => {
-        console.error("فشل تحميل القاموس:", error);
+        console.error('خطأ في تحميل JSON:', error);
+        document.getElementById("result").innerText = "⚠️ تعذر تحميل البيانات.";
       });
 
-    function فسر() {
-      const input = document.getElementById("input").value;
-      const language = document.getElementById("language").value;
-      const القاموس_المختار = القاموس[language] || {};
-      let الكود = input;
+    // دالة البحث والعرض
+    function getTag() {
+      const input = document.getElementById("arabicInput").value.trim();
+      const tag = tags[input];
+      const resultDiv = document.getElementById("result");
 
-      for (const [عربي, انجليزي] of Object.entries(القاموس_المختار)) {
-        const regex = new RegExp(عربي, 'g');
-        if (Array.isArray(انجليزي)) {
-          الكود = الكود.replace(regex, انجليزي[0]);
-        } else {
-          الكود = الكود.replace(regex, انجليزي);
-        }
+      if (tag) {
+        resultDiv.innerHTML = `الوسم هو: <code>${tag}</code>`;
+      } else {
+        resultDiv.innerHTML = "⚠️ لم يتم العثور على هذا الاسم في القائمة.";
       }
-
-      document.getElementById("output").textContent = الكود;
     }
   </script>
+
 </body>
 </html>
